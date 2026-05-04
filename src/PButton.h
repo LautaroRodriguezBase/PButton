@@ -1,5 +1,5 @@
-#ifndef BUTTON_h
-#define BUTTON_h
+#ifndef PBUTTON_h
+#define PBUTTON_h
 
 /**
  * Copyright 2026 Lautaro Ezequiel Rodriguez Base
@@ -22,7 +22,7 @@
 
 #define TIME_DEBOUNCE_DELAY 50
 
-class Button{
+class PButton{
     private:
         // the current reading from the input pin
         uint8_t buttonState;
@@ -35,7 +35,7 @@ class Button{
         uint8_t state2Read;
         uint8_t pin;
     public:
-        Button(uint8_t pin, uint8_t state2Read, uint8_t debounceDelay = TIME_DEBOUNCE_DELAY);
+        PButton(uint8_t pin, uint8_t state2Read, uint8_t debounceDelay = TIME_DEBOUNCE_DELAY);
 
         bool read();
         uint8_t getPin();

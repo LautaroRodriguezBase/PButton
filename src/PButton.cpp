@@ -16,9 +16,9 @@
 
 #include <sys/_stdint.h>
 #include "esp32-hal-gpio.h"
-#include "Button.h"
+#include "PButton.h"
 
-Button::Button(uint8_t pin, uint8_t state2Read, uint8_t debounceDelay){
+PButton::PButton(uint8_t pin, uint8_t state2Read, uint8_t debounceDelay){
     this->pin = pin;
     this->state2Read = state2Read;
     this->debounceDelay = debounceDelay;
@@ -27,7 +27,7 @@ Button::Button(uint8_t pin, uint8_t state2Read, uint8_t debounceDelay){
     pinMode(pin, INPUT_PULLUP);
 }
 
-bool Button::read(){
+bool PButton::read(){
     bool res = false;
     uint8_t reading = digitalRead(this->pin);
 
@@ -51,6 +51,6 @@ bool Button::read(){
     return res;
 }
 
-uint8_t Button::getPin(){
+uint8_t PButton::getPin(){
     return this->pin;
 }
