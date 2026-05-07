@@ -25,17 +25,17 @@ class PButton{
     enum class HeldStatus{
         IDLE,
         START,
-        COMPLETE
+        COMPLETE,
+        LOCKED
     };
 
     //Belongs to the class
     private:
         static uint64_t startTimes;
         static HeldStatus stateOfPressed;
-        static uint32_t timeAreHeld;
 
     public:
-        static bool areHeld(bool arePressed);
+        static bool areHeld(uint32_t timeAreHeld, bool arePressed);
 
     //Belongs to the object
     private:
@@ -63,7 +63,7 @@ class PButton{
         uint8_t getPin();
 
         bool isPressed();
-        bool isHeld();
+        bool isHeld(uint32_t timeIsHeld);
 };
 
 #endif
