@@ -14,41 +14,80 @@
  * limitations under the License.
  */
 
-#include <sys/_stdint.h>
-#include "esp32-hal-gpio.h"
 #include "PButton.h"
 
 PButton::PButton(uint8_t pin, uint8_t state2Read, uint8_t debounceDelay){
     this->pin = pin;
     this->state2Read = state2Read;
-    this->debounceDelay = debounceDelay;
-    this->lastButtonState = LOW;
-    this->lastDebounceTime = 0;
-    pinMode(pin, INPUT_PULLUP);
+
+    this->readData.debounceDelay = debounceDelay;
+    this->readData.lastButtonState = !state2Read;
+    this->readData.lastDebounceTime = 0;
+
+    pinMode(pin, INPUT);
 }
 
-bool PButton::read(){
+// Class
+uint64_t PButton::startTimes = 0;
+PButton::HeldStatus PButton::heldStatus = PButton::HeldStatus::IDLE;
+
+bool PButton::areHeld(bool arePressed){
+    if(arePressed && (PButton::stateOfPressed == PButton::HeldStatus::IDLE) ){
+        PButton::stateOfPressed == PButton::HeldStatus::START;
+        dataBtn->lastHold = millis();
+
+    }else if(arePressed && PButton::stateOfPressed == PButton::HeldStatus::START){
+        if(PButton::stateOfPressed != PButton::HeldStatus::COMPLETE && millis() - PButton::startTimes >= PButton::timeAreHeld){
+            PButton::stateOfPressed = PButton::HeldStatus::COMPLETE;
+        }
+    }else if( !arePressed && PButton::stateOfPressed == PButton::HeldStatus::START){
+        PButton::stateOfPressed == PButton::HeldStatus::IDLE;
+    }
+
+    return (PButton::stateOfPressed == PButton::HeldStatus::COMPLETE);
+}
+
+
+// Object
+bool PButton::isPressed(){
     bool res = false;
     uint8_t reading = digitalRead(this->pin);
 
-    if (reading != this->lastButtonState) {
-        this->lastDebounceTime = millis();
+    if (reading != this->readData.lastButtonState) {
+        this->readData.lastDebounceTime = millis();
     }
 
-    if ((millis() - this->lastDebounceTime) > this->debounceDelay) {
+    if ((millis() - this->readData.lastDebounceTime) > this->readData.debounceDelay) {
         if (reading != this->buttonState) {
             this->buttonState = reading;
             if (this->buttonState == this->state2Read) {
-                // Tal vez acá habría que agregar un código que
-                // lea si se mantuvo presionado por X cantidad de tiempo
                 res = true;
             }
         }
     }
 
-    this->lastButtonState = reading;
+    this->readData.lastButtonState = reading;
 
     return res;
+}
+
+bool PButton::isHeld(){
+    bool state = false;
+    if(isPress && !dataBtn->holdStart ){
+        dataBtn->holdStart = true;
+        dataBtn->lastHold = millis();
+    }else if(isPress && dataBtn->holdStart){
+        funcPtr();
+        if(!dataBtn->holdComplete && millis() - dataBtn->lastHold >= timeTo){
+            dataBtn->holdComplete = true;
+            state = true;
+        }
+    }else if( !isPress && dataBtn->holdStart){
+        dataBtn->holdStart = false;
+        dataBtn->holdComplete = false;
+    }
+
+    return state;
 }
 
 uint8_t PButton::getPin(){

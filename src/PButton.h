@@ -17,28 +17,53 @@
  * limitations under the License.
  */
 
-#include <sys/_stdint.h>
 #include <Arduino.h>
 
 #define TIME_DEBOUNCE_DELAY 50
 
 class PButton{
+    enum class HeldStatus{
+        IDLE,
+        START,
+        COMPLETE
+    };
+
+    //Belongs to the class
     private:
-        // the current reading from the input pin
-        uint8_t buttonState;
-        // the previous reading from the input pin
-        uint8_t lastButtonState;
+        static uint64_t startTimes;
+        static HeldStatus stateOfPressed;
+        static uint32_t timeAreHeld;
 
-        uint64_t lastDebounceTime; // the last time the output pin was toggled
-        uint64_t debounceDelay;   // the debounce time; increase if the output flickers
+    public:
+        static bool areHeld(bool arePressed);
 
-        uint8_t state2Read;
+    //Belongs to the object
+    private:
         uint8_t pin;
+        uint8_t state2Read;
+
+        uint64_t startTime;//initial time for read if is pressed
+        HeldStatus heldStatus;
+
+        struct{
+            // the current reading from the input pin
+            uint8_t buttonState;
+            // the previous reading from the input pin
+            uint8_t lastButtonState;
+
+            // the last time the output pin was toggled
+            uint64_t lastDebounceTime;
+            // the debounce time
+            uint64_t debounceDelay;
+        }readData;
+
     public:
         PButton(uint8_t pin, uint8_t state2Read, uint8_t debounceDelay = TIME_DEBOUNCE_DELAY);
 
-        bool read();
         uint8_t getPin();
+
+        bool isPressed();
+        bool isHeld();
 };
 
 #endif
