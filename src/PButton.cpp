@@ -24,24 +24,32 @@ PButton::PButton(uint8_t pin, uint8_t state2Read, uint8_t debounceDelay){
     this->readData.lastButtonState = !state2Read;
     this->readData.lastDebounceTime = 0;
 
+    this->startTime = 0;
+    this->heldStatus = HeldStatus::IDLE;
+
     pinMode(pin, INPUT);
 }
 
 // Class
 uint64_t PButton::startTimes = 0;
-PButton::HeldStatus PButton::heldStatus = PButton::HeldStatus::IDLE;
+PButton::HeldStatus PButton::stateOfPressed = PButton::HeldStatus::IDLE;
 
 bool PButton::areHeld(uint32_t timeAreHeld, bool arePressed){
     if(arePressed && (PButton::stateOfPressed == PButton::HeldStatus::IDLE) ){
-        PButton::stateOfPressed == PButton::HeldStatus::START;
-        dataBtn->lastHold = millis();
+        PButton::stateOfPressed = PButton::HeldStatus::START;
+        PButton::startTimes = millis();
 
     }else if(arePressed && PButton::stateOfPressed == PButton::HeldStatus::START){
         if(PButton::stateOfPressed != PButton::HeldStatus::COMPLETE && millis() - PButton::startTimes >= timeAreHeld){
             PButton::stateOfPressed = PButton::HeldStatus::COMPLETE;
         }
-    }else if( !arePressed && PButton::stateOfPressed == PButton::HeldStatus::START){
-        PButton::stateOfPressed == PButton::HeldStatus::IDLE;
+
+    }else if(arePressed && PButton::stateOfPressed == PButton::HeldStatus::COMPLETE){
+        PButton::stateOfPressed = PButton::HeldStatus::LOCKED;
+
+    }else if( !arePressed ){
+        PButton::stateOfPressed = PButton::HeldStatus::IDLE;
+
     }
 
     return (PButton::stateOfPressed == PButton::HeldStatus::COMPLETE);
@@ -58,9 +66,9 @@ bool PButton::isPressed(){
     }
 
     if ((millis() - this->readData.lastDebounceTime) > this->readData.debounceDelay) {
-        if (reading != this->buttonState) {
-            this->buttonState = reading;
-            if (this->buttonState == this->state2Read) {
+        if (reading != this->readData.buttonState) {
+            this->readData.buttonState = reading;
+            if (this->readData.buttonState == this->state2Read) {
                 res = true;
             }
         }
@@ -74,15 +82,18 @@ bool PButton::isPressed(){
 bool PButton::isHeld(uint32_t timeIsHeld){
     bool isPress = (digitalRead(this->pin) == this->state2Read);
     if(isPress && (this->heldStatus == PButton::HeldStatus::IDLE) ){
-        this->heldStatus == PButton::HeldStatus::START;
+        this->heldStatus = PButton::HeldStatus::START;
         this->startTime = millis();
 
     }else if(isPress && this->heldStatus == PButton::HeldStatus::START){
         if(this->heldStatus != PButton::HeldStatus::COMPLETE && millis() - this->startTime >= timeIsHeld){
             this->heldStatus = PButton::HeldStatus::COMPLETE;
         }
-    }else if( !isPress && this->heldStatus == PButton::HeldStatus::START){
-        this->heldStatus == PButton::HeldStatus::IDLE;
+    }else if(isPress && this->heldStatus == PButton::HeldStatus::COMPLETE){
+        this->heldStatus = PButton::HeldStatus::LOCKED;
+
+    }else if( !isPress ){
+        this->heldStatus = PButton::HeldStatus::IDLE;
     }
 
     return (this->heldStatus == PButton::HeldStatus::COMPLETE);
