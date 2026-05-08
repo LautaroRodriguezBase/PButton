@@ -1,0 +1,25 @@
+#######################################
+# Syntax Coloring Map For PButton
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+PButton		KEYWORD1
+HeldStatus	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+areHeld		KEYWORD2
+getPin		KEYWORD2
+isPressed	KEYWORD2
+isHeld		KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+
+TIME_DEBOUNCE_DELAY		LITERAL1
